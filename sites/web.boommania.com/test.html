@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hoja de Presupuesto Editable</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 900px;
+    margin: 40px auto;
+    background: #f9fafb;
+    color: #333;
+  }
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    box-shadow: 0 0 8px rgb(0 0 0 / 0.1);
+  }
+  th, td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  th {
+    background-color: #2980b9;
+    color: white;
+  }
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  input[type="number"] {
+    text-align: right;
+  }
+  tfoot td {
+    font-weight: bold;
+    font-size: 1.1em;
+    background: #ecf0f1;
+  }
+  button {
+    margin-top: 15px;
+    background: #27ae60;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1em;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background: #219150;
+  }
+</style>
+</head>
+<body>
+
+<h1>Hoja de Presupuesto Editable</h1>
+
+<table id="budget-table">
+  <thead>
+    <tr>
+      <th>Concepto</th>
+      <th>Cantidad</th>
+      <th>Precio Unitario (€)</th>
+      <th>Importe (€)</th>
+      <th>Acción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><input type="text" placeholder="Descripción del producto/servicio" /></td>
+      <td><input type="number" min="0" value="1" /></td>
+      <td><input type="number" min="0" step="0.01" value="0.00" /></td>
+      <td class="importe">0.00</td>
+      <td><button class="delete-row">Eliminar</button></td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="3" style="text-align:right;">Total:</td>
+      <td id="total">0.00</td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+
+<button id="add-row">Añadir línea</button>
+
+<script>
+  const tableBody = document.querySelector('#budget-table tbody');
+  const totalEl = document.getElementById('total');
+  const addRowBtn = document.getElementById('add-row');
+
+  function calcularImporte(row) {
+    const cantidad = parseFloat(row.querySelector('input[type="number"]:nth-of-type(1)').value) || 0;
+    const precio = parseFloat(row.querySelector('input[type="number"]:nth-of-type(2)').value) || 0;
+    const importe = cantidad * precio;
+    row.querySelector('.importe').textContent = importe.toFixed(2);
+    return importe;
+  }
+
+  function calcularTotal() {
+    let total = 0;
+    tableBody.querySelectorAll('tr').forEach(row => {
+      total += calcularImporte(row);
+    });
+    totalEl.textContent = total.toFixed(2);
+  }
+
+  function addRow() {
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+      <td><input type="text" placeholder="Descripción del producto/servicio" /></td>
+      <td><input type="number" min="0" value="1" /></td>
+      <td><input type="number" min="0" step="0.01" value="0.00" /></td>
+      <td class="importe">0.00</td>
+      <td><button class="delete-row">Eliminar</button></td>
+    `;
+    tableBody.appendChild(newRow);
+    attachListeners(newRow);
+  }
+
+  function attachListeners(row) {
+    const inputs = row.querySelectorAll('input[type="number"]');
+    inputs.forEach(input => {
+      input.addEventListener('input', calcularTotal);
+    });
+
+    const deleteBtn = row.querySelector('.delete-row');
+    deleteBtn.addEventListener('click', () => {
+      row.remove();
+      calcularTotal();
+    });
+  }
+
+  // Inicial
+  tableBody.querySelectorAll('tr').forEach(attachListeners);
+  calcularTotal();
+
+  addRowBtn.addEventListener('click', () => {
+    addRow();
+    calcularTotal();
+  });
+</script>
+
+</body>
+</html>
